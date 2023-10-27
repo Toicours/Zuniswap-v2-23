@@ -30,6 +30,7 @@ contract ZuniswapV2Pair is ERC20, Math {
     address public token0;
     address public token1;
 
+    // reserve and reserve1 track the ERC20 reserve
     uint112 private reserve0;
     uint112 private reserve1;
     uint32 private blockTimestampLast;
@@ -77,6 +78,7 @@ contract ZuniswapV2Pair is ERC20, Math {
         (uint112 reserve0_, uint112 reserve1_, ) = getReserves();
         uint256 balance0 = IERC20(token0).balanceOf(address(this));
         uint256 balance1 = IERC20(token1).balanceOf(address(this));
+        // amounts cannot be negative since integer is unsigned. It reverts
         uint256 amount0 = balance0 - reserve0_;
         uint256 amount1 = balance1 - reserve1_;
 
@@ -99,10 +101,9 @@ contract ZuniswapV2Pair is ERC20, Math {
         emit Mint(to, amount0, amount1);
     }
 
-    function burn(address to)
-        public
-        returns (uint256 amount0, uint256 amount1)
-    {
+    function burn(
+        address to
+    ) public returns (uint256 amount0, uint256 amount1) {
         uint256 balance0 = IERC20(token0).balanceOf(address(this));
         uint256 balance1 = IERC20(token1).balanceOf(address(this));
         uint256 liquidity = balanceOf[address(this)];
@@ -168,7 +169,7 @@ contract ZuniswapV2Pair is ERC20, Math {
 
         if (
             balance0Adjusted * balance1Adjusted <
-            uint256(reserve0_) * uint256(reserve1_) * (1000**2)
+            uint256(reserve0_) * uint256(reserve1_) * (1000 ** 2)
         ) revert InvalidK();
 
         _update(balance0, balance1, reserve0_, reserve1_);
@@ -186,15 +187,7 @@ contract ZuniswapV2Pair is ERC20, Math {
         );
     }
 
-    function getReserves()
-        public
-        view
-        returns (
-            uint112,
-            uint112,
-            uint32
-        )
-    {
+    function getReserves() public view returns (uint112, uint112, uint32) {
         return (reserve0, reserve1, blockTimestampLast);
     }
 
@@ -234,11 +227,7 @@ contract ZuniswapV2Pair is ERC20, Math {
         emit Sync(reserve0, reserve1);
     }
 
-    function _safeTransfer(
-        address token,
-        address to,
-        uint256 value
-    ) private {
+    function _safeTransfer(address token, address to, uint256 value) private {
         (bool success, bytes memory data) = token.call(
             abi.encodeWithSignature("transfer(address,uint256)", to, value)
         );
